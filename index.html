@@ -87,7 +87,7 @@ button:hover{
 <script>
 // Admin Security Check
 if(localStorage.getItem("admin") !== "true"){
-    window.location.href = "admin_login.html"; // admin login page
+    window.location.href = "login.html"; // admin login page
 }
 
 // Page Redirect Function
@@ -98,7 +98,7 @@ function go(page){
 // Logout
 function logout(){
     localStorage.removeItem("admin");
-    window.location.href = "admin_login.html";
+    window.location.href = "login.html";
 }
 </script>
 
