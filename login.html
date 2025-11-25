@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login</title>
+
+<style>
+body{
+  background:#111;
+  font-family:Arial;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+.box{
+  background:#1c1c1c;
+  padding:30px;
+  width:320px;
+  border-radius:10px;
+  border:1px solid #333;
+}
+.box h2{text-align:center;}
+input{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:5px;
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  margin-top:20px;
+  background:#ff3b3b;
+  color:white;
+  font-size:16px;
+  border-radius:5px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Admin Login</h2>
+  <input type="password" id="pass" placeholder="Enter Admin Password">
+  <button onclick="login()">LOGIN</button>
+</div>
+
+<script>
+const adminPassword = "admin123";  // Change this
+
+function login(){
+    const p = document.getElementById("pass").value;
+
+    if(p === adminPassword){
+        localStorage.setItem("admin", "true");
+        window.location.href = "index.html";
+    } else {
+        alert("Wrong Password!");
+    }
+}
+</script>
+
+</body>
+</html>

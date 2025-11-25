@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ban User</title>
+
+<style>
+body{
+  background:#0d0d0d;
+  color:white;
+  font-family:Arial;
+  padding:20px;
+}
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:6px;
+  border:0;
+  outline:0;
+  margin-bottom:15px;
+}
+
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:10px;
+  border:1px solid #333;
+  display:none;
+}
+
+button{
+  padding:10px 15px;
+  border:0;
+  margin-top:15px;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:14px;
+}
+.ban{ background:#e63946;color:white; }
+.unban{ background:#28a745;color:white; }
+
+button:hover{ opacity:0.8; }
+
+</style>
+</head>
+
+<body>
+
+<h2>🚫 Ban / Unban User</h2>
+
+<input type="text" id="uid" placeholder="Enter UID..." />
+
+<button onclick="searchUser()" style="width:100%;background:#444;color:white;border-radius:6px;padding:12px;">
+  Search
+</button>
+
+<div class="card" id="infoCard">
+  <p><b>Name:</b> <span id="name"></span></p>
+  <p><b>Balance:</b> <span id="balance"></span></p>
+  <p><b>Status:</b> <span id="status"></span></p>
+
+  <button class="ban" id="banBtn" onclick="banUser()">Ban User</button>
+  <button class="unban" id="unbanBtn" onclick="unbanUser()">Unban User</button>
+</div>
+
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ===== FIREBASE CONFIG =====
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentUID = null;
+
+
+// ===== SEARCH USER =====
+async function searchUser(){
+  const uid = document.getElementById("uid").value.trim();
+  if(uid === "") return alert("Enter UID first!");
+
+  const doc = await db.collection("users").doc(uid).get();
+  if(!doc.exists){
+    alert("User not found!");
+    return;
+  }
+
+  currentUID = uid;
+  const d = doc.data();
+
+  document.getElementById("name").innerText = d.name || "No Name";
+  document.getElementById("balance").innerText = d.balance || 0;
+  document.getElementById("status").innerText = d.ban ? "BANNED" : "ACTIVE";
+
+  document.getElementById("banBtn").style.display = d.ban ? "none" : "block";
+  document.getElementById("unbanBtn").style.display = d.ban ? "block" : "none";
+
+  document.getElementById("infoCard").style.display = "block";
+}
+
+
+// ===== BAN USER =====
+async function banUser(){
+  await db.collection("users").doc(currentUID).update({ ban: true });
+  alert("User Banned!");
+  searchUser();
+}
+
+
+// ===== UNBAN USER =====
+async function unbanUser(){
+  await db.collection("users").doc(currentUID).update({ ban: false });
+  alert("User Unbanned!");
+  searchUser();
+}
+</script>
+
+</body>
+</html>

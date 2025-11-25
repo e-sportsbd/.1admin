@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Home</title>
+
+<style>
+body{
+  background:#0d0d0d;
+  font-family: 'Poppins', sans-serif;
+  color:white;
+  padding:20px;
+  margin:0;
+}
+h2{
+  text-align:center;
+  margin-bottom:25px;
+  color:#ff0055;
+}
+.menu{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  max-width:430px;
+  margin:auto;
+}
+button{
+  padding:15px;
+  background:#1a1a1a;
+  color:white;
+  border:1px solid #333;
+  border-radius:10px;
+  font-size:17px;
+  cursor:pointer;
+  text-align:left;
+  transition:0.2s;
+}
+button:hover{
+  background:#222;
+  transform:scale(1.02);
+}
+.logout{
+  background:#ff2e2e;
+}
+</style>
+
+</head>
+<body>
+
+<h2>⚡ Admin Control Panel</h2>
+
+<div class="menu">
+
+  <!-- MONEY SYSTEM -->
+  <button onclick="go('deposit-control.html')">💵 Deposit Control</button>
+  <button onclick="go('withdraw-control.html')">💰 Withdraw Control</button>
+
+  <!-- USERS -->
+  <button onclick="go('users-list.html')">👥 All Users List</button>
+  <button onclick="go('ban-user.html')">🚫 Ban / Unban User</button>
+
+  <!-- MATCH SYSTEM -->
+  <button onclick="go('match-control.html')">🎮 Create Match</button>
+  <button onclick="go('match-list.html')">📄 All Matches</button>
+  <button onclick="go('match-result.html')">🏆 Match Result Upload</button>
+  <button onclick="go('joined-players.html')">🧑‍🤝‍🧑 Joined Players</button>
+
+  <!-- ANNOUNCEMENT -->
+  <button onclick="go('notice-control.html')">📢 Add Notice (Home Page)</button>
+  <button onclick="go('home_control.html')">Home control</button>
+
+  <!-- COMMUNICATION -->
+  <button onclick="go('support-control.html')">📩 Support Messages</button>
+
+  <!-- PAYMENT SETTINGS -->
+  <button onclick="go('payment-methods.html')">🏦 Payment Methods (Bkash/Nagad)</button>
+
+  <!-- SETTINGS -->
+  <button onclick="go('settings.html')">⚙️ Admin Settings</button>
+
+  <!-- LOGOUT -->
+  <button class="logout" onclick="logout()">Logout</button>
+
+</div>
+
+<script>
+// Admin Security Check
+if(localStorage.getItem("admin") !== "true"){
+    window.location.href = "admin_login.html"; // admin login page
+}
+
+// Page Redirect Function
+function go(page){
+    window.location.href = page;
+}
+
+// Logout
+function logout(){
+    localStorage.removeItem("admin");
+    window.location.href = "admin_login.html";
+}
+</script>
+
+</body>
+</html>

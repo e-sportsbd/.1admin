@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit Control</title>
+
+<style>
+body{
+  background:#0d0d0d;
+  color:white;
+  font-family:Arial;
+  margin:0;
+  padding:15px;
+}
+.container{
+  max-width:500px;
+  margin:auto;
+}
+
+.card{
+  background:#151515;
+  padding:18px;
+  border-radius:12px;
+  margin-top:15px;
+}
+
+h2{
+  text-align:center;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  background:#1e1e1e;
+  border:1px solid #333;
+  color:white;
+  border-radius:8px;
+  margin-top:5px;
+}
+
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.save-btn{
+  width:100%;
+  background:#ff006a;
+  color:white;
+  font-size:17px;
+}
+
+.req{
+  border-left:4px solid #ff006a;
+  padding-left:10px;
+  margin-bottom:15px;
+}
+
+.approve{
+  background:#00c851;
+  color:white;
+  margin-right:8px;
+}
+
+.reject{
+  background:#ff4444;
+  color:white;
+}
+
+.small{
+  color:#aaa;
+  font-size:13px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h2>💵 Add Money Control</h2>
+
+<!-- PAYMENT NUMBER CONTROL -->
+<div class="card">
+  <h3>🏦 Payment Numbers</h3>
+
+  <label>Bkash Number</label>
+  <input id="bkash">
+
+  <label>Nagad Number</label>
+  <input id="nagad">
+
+  <button class="save-btn" onclick="saveNumbers()">Save Numbers</button>
+  <p id="msg"></p>
+</div>
+
+<!-- ADD MONEY REQUEST LIST -->
+<div class="card">
+  <h3>📩 Pending Deposit Requests</h3>
+  <div id="requestList">Loading...</div>
+</div>
+
+</div>
+
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ---------------- Firebase Config ----------------
+const firebaseConfig = {
+  apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+  authDomain: "post-c7e41.firebaseapp.com",
+  projectId: "post-c7e41",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const bkashInput = document.getElementById("bkash");
+const nagadInput = document.getElementById("nagad");
+const msg = document.getElementById("msg");
+
+// ---------- Load Payment Numbers ----------
+db.collection("paymentNumbers").doc("bkash").onSnapshot(d=>{
+  if(d.exists){ bkashInput.value = d.data().number; }
+});
+
+db.collection("paymentNumbers").doc("nagad").onSnapshot(d=>{
+  if(d.exists){ nagadInput.value = d.data().number; }
+});
+
+
+// ---------- SAVE NUMBERS ----------
+function saveNumbers(){
+  let bk = bkashInput.value.trim();
+  let na = nagadInput.value.trim();
+
+  db.collection("paymentNumbers").doc("bkash").set({ number: bk });
+  db.collection("paymentNumbers").doc("nagad").set({ number: na })
+  .then(()=>{
+    msg.innerHTML = "Saved Successfully ✔️";
+  });
+}
+
+
+
+// ---------- LOAD ADD MONEY REQUESTS ----------
+db.collection("addMoney")
+  .where("status", "==", "pending")
+  .orderBy("time", "desc")
+  .onSnapshot(
+    snapshot => {
+      let html = "";
+
+      snapshot.forEach(doc=>{
+        let d = doc.data();
+
+        html += `
+        <div class="req">
+          <p><b>Amount:</b> ${d.amount} Tk</p>
+          <p><b>Method:</b> ${d.method}</p>
+          <p><b>TxID:</b> ${d.txid}</p>
+          <p><b>Number:</b> ${d.number}</p>
+          <p class="small">${d.time ? d.time.toDate() : ""}</p>
+
+          <button class="approve" onclick="approve('${doc.id}', ${d.amount})">Approve</button>
+          <button class="reject" onclick="rejectReq('${doc.id}')">Reject</button>
+        </div>
+        `;
+      });
+
+      if(snapshot.empty){
+        html = "<p>No pending request</p>";
+      }
+
+      document.getElementById("requestList").innerHTML = html;
+    },
+
+    error => {
+      document.getElementById("requestList").innerHTML =
+        "<p style='color:red'>⚠ Composite index required in Firestore!</p>";
+      console.error("Index Error:", error);
+    }
+  );
+
+
+// ---------- APPROVE REQUEST ----------
+function approve(id, amount){
+  db.collection("addMoney").doc(id).update({
+    status: "approved"
+  }).then(()=>{
+    alert("Approved!");
+  });
+}
+
+// ---------- REJECT REQUEST ----------
+function rejectReq(id){
+  db.collection("addMoney").doc(id).update({
+    status: "rejected"
+  }).then(()=>{
+    alert("Rejected!");
+  });
+}
+</script>
+
+</body>
+</html>

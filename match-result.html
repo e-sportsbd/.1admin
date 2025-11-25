@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match Result Upload</title>
+
+<style>
+  body{
+    margin:0;
+    padding:0;
+    background:#0d0d0d;
+    font-family:Arial;
+    color:#fff;
+  }
+
+  header{
+    background:#1a1a1a;
+    padding:18px;
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    border-bottom:2px solid #333;
+  }
+
+  .container{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+  }
+
+  .card{
+    background:#1b1b1b;
+    padding:25px;
+    border-radius:12px;
+    border:1px solid #333;
+    margin-bottom:20px;
+  }
+
+  h2{
+    margin:0 0 15px 0;
+  }
+
+  label{
+    font-size:15px;
+    opacity:0.8;
+  }
+
+  select, input, textarea{
+    width:100%;
+    padding:12px;
+    background:#232323;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    margin-top:8px;
+    margin-bottom:18px;
+  }
+
+  button{
+    background:#007bff;
+    padding:12px 20px;
+    border:none;
+    color:#fff;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+  }
+
+  button:hover{
+    background:#0a84ff;
+  }
+
+</style>
+</head>
+
+<body>
+
+<header>Match Result Upload</header>
+
+<div class="container">
+
+  <div class="card">
+
+    <h2>Upload Result</h2>
+
+    <!-- Select Match -->
+    <label>Select Match</label>
+    <select>
+      <option>Select Match</option>
+      <option>Match #1</option>
+      <option>Match #2</option>
+      <option>Match #3</option>
+    </select>
+
+    <!-- Winner -->
+    <label>Winner UID</label>
+    <input type="text" placeholder="Enter Winner UID">
+
+    <!-- Runner Up -->
+    <label>Runner-up UID</label>
+    <input type="text" placeholder="Enter Runner-up UID">
+
+    <!-- Full Details -->
+    <label>Full Result Details</label>
+    <textarea rows="5" placeholder="Paste full result / kill list..."></textarea>
+
+    <button>Upload Result</button>
+
+  </div>
+
+</div>
+
+</body>
+</html>

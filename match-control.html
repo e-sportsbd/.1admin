@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin – Neon Cyber UI</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  padding:20px;
+  font-family:'Poppins',sans-serif;
+  background:#05010f;
+  color:white;
+}
+
+/* Heading */
+h2{
+  text-align:center;
+  font-size:28px;
+  margin-bottom:25px;
+  color:#00eaff;
+  text-shadow:0 0 18px #00c3ff;
+}
+
+/* Neon Form Box */
+.container{
+  width:100%;
+  max-width:500px;
+  margin:auto;
+  padding:25px;
+  border-radius:18px;
+  border:2px solid rgba(0,255,255,0.25);
+  box-shadow:0 0 15px rgba(0,255,255,0.25);
+  background:rgba(0,0,15,0.5);
+}
+
+/* Inputs */
+label{
+  font-size:14px;
+  color:#b1ecff;
+  font-weight:500;
+}
+input,select{
+  width:100%;
+  padding:11px;
+  margin:8px 0 15px 0;
+  background:#0a0a19;
+  border:1px solid #122;
+  color:#8efcff;
+  border-radius:10px;
+  font-size:14px;
+  outline:none;
+  box-shadow:0 0 10px rgba(0,200,255,0.1);
+}
+
+/* Neon Button */
+button{
+  padding:12px;
+  width:100%;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  color:black;
+  background:#00eaff;
+  box-shadow:0 0 15px #00eaff;
+  transition:0.3s;
+}
+button:hover{
+  background:#00f7ff;
+  box-shadow:0 0 25px #00eaff;
+}
+
+/* Section Title */
+.match-title{
+  font-size:22px;
+  color:#8dfdff;
+  margin-top:40px;
+  border-left:4px solid #00ffe1;
+  padding-left:10px;
+  text-shadow:0 0 10px #00ffe1;
+}
+
+/* Each Match Box */
+.match-box{
+  background:#070014;
+  border:1px solid rgba(0,255,255,0.15);
+  padding:15px;
+  border-radius:14px;
+  margin-bottom:10px;
+  box-shadow:0 0 10px rgba(0,255,255,0.1);
+}
+
+/* Neon Title */
+.match-box b{
+  font-size:18px;
+  color:#00f7ff;
+  text-shadow:0 0 8px #00eaff;
+}
+
+/* Buttons Small */
+.small-btn{
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:13px;
+  margin-right:6px;
+  color:black;
+  border:none;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.save-btn{background:#00eaff;box-shadow:0 0 10px #00eaff;}
+.edit-btn{background:#ffea00;box-shadow:0 0 10px #ffe600;}
+.delete-btn{background:#ff0066;color:white;box-shadow:0 0 12px #ff0066;}
+.small-btn:hover{opacity:0.9;}
+</style>
+</head>
+
+<body>
+
+<h2>⚡ NEON CYBER ADMIN PANEL ⚡</h2>
+
+<div class="container">
+
+  <label>Match Category</label>
+  <select id="category">
+    <option value="bermuda_matches">Bermuda</option>
+    <option value="cs_matches">CS</option>
+    <option value="lonewolf_matches">LoneWolf</option>
+  </select>
+
+  <label>Match Type</label>
+  <input type="text" id="matchType">
+
+  <label>Slot Count</label>
+  <input type="number" id="slotCount">
+
+  <label>Entry Fee</label>
+  <input type="number" id="entryFee">
+
+  <label>Prize Pool</label>
+  <input type="number" id="prizePool">
+
+  <label>Map</label>
+  <input type="text" id="map">
+
+  <label>Match Time</label>
+  <input type="text" id="matchTime">
+
+  <button onclick="addMatch()">+ ADD MATCH</button>
+
+</div>
+
+<h3 class="match-title">Bermuda Matches</h3>
+<div id="bermudaList"></div>
+
+<h3 class="match-title">CS Matches</h3>
+<div id="csList"></div>
+
+<h3 class="match-title">LoneWolf Matches</h3>
+<div id="lwList"></div>
+
+<script>
+const dbConfig = {
+  apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+  authDomain: "noreply@post-c7e41.firebaseapp.com",
+  projectId: "post-c7e41"
+};
+firebase.initializeApp(dbConfig);
+const db = firebase.firestore();
+
+function addMatch(){
+  const cat = document.getElementById("category").value;
+  const data = {
+    category: cat,
+    matchType: document.getElementById("matchType").value || "Not Set",
+    slotCount: Number(document.getElementById("slotCount").value) || 0,
+    entryFee: Number(document.getElementById("entryFee").value) || 0,
+    prizePool: Number(document.getElementById("prizePool").value) || 0,
+    map: document.getElementById("map").value,
+    matchTime: document.getElementById("matchTime").value,
+    roomId:"",
+    roomPassword:"",
+    createdAt:new Date()
+  };
+  db.collection(cat).add(data);
+  alert("Match Added!");
+}
+
+function load(col, box){
+  db.collection(col).orderBy("createdAt","desc").onSnapshot(ss=>{
+    const d = document.getElementById(box);
+    d.innerHTML = "";
+    ss.forEach(doc=>{
+      const m = doc.data();
+      const id = doc.id;
+
+      d.innerHTML += `
+      <div class="match-box">
+        <b>${m.matchType}</b><br><br>
+        Slot: ${m.slotCount}<br>
+        Entry: ${m.entryFee}<br>
+        Prize: ${m.prizePool}<br>
+        Map: ${m.map}<br>
+        Time: ${m.matchTime}<br><br>
+
+        <label>Room ID</label>
+        <input id="roomId_${id}" value="${m.roomId}">
+        <label>Password</label>
+        <input id="roomPass_${id}" value="${m.roomPassword}">
+
+        <button class="save-btn small-btn" onclick="saveRoom('${id}','${col}')">Save</button>
+        <button class="edit-btn small-btn" onclick="editMatch('${id}','${col}','${m.matchType}','${m.entryFee}','${m.prizePool}','${m.slotCount}','${m.map}','${m.matchTime}')">Edit</button>
+        <button class="delete-btn small-btn" onclick="deleteMatch('${id}','${col}')">Delete</button>
+      </div>
+      `;
+    });
+  });
+}
+
+load("bermuda_matches","bermudaList");
+load("cs_matches","csList");
+load("lonewolf_matches","lwList");
+
+function saveRoom(id,col){
+  db.collection(col).doc(id).update({
+    roomId:document.getElementById("roomId_"+id).value,
+    roomPassword:document.getElementById("roomPass_"+id).value
+  });
+}
+
+function deleteMatch(id,col){
+  if(confirm("Delete Match?"))
+    db.collection(col).doc(id).delete();
+}
+
+function editMatch(id,col,type,entry,prize,slot,map,time){
+  const nt = prompt("Type", type);
+  const ns = prompt("Slot", slot);
+  const ne = prompt("Entry", entry);
+  const np = prompt("Prize", prize);
+  const nm = prompt("Map", map);
+  const nti = prompt("Time", time);
+
+  db.collection(col).doc(id).update({
+    matchType:nt,
+    slotCount:Number(ns),
+    entryFee:Number(ne),
+    prizePool:Number(np),
+    map:nm,
+    matchTime:nti
+  });
+}
+</script>
+
+</body>
+</html>

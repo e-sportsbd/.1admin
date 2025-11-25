@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Users – Admin</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+body{
+    margin:0;background:#0d0d0d;color:white;font-family:Arial;
+}
+.container{
+    width:95%;max-width:800px;margin:20px auto;
+}
+.userBox{
+    background:#111;padding:15px;margin:10px 0;
+    border-radius:10px;border-left:5px solid #ff0055;
+}
+h2{text-align:center;margin-bottom:20px;}
+.title{font-size:18px;font-weight:bold;color:#00eaff;}
+.small{color:#bbb;font-size:14px;margin-top:4px;}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <h2>All Registered Users</h2>
+    <div id="userList"></div>
+</div>
+
+<script>
+// --------------- Firebase Config (Add databaseURL) -----------------
+const firebaseConfig = {
+  apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
+  authDomain: "post-c7e41.firebaseapp.com",
+  projectId: "post-c7e41",
+
+  // 🔥 This line is REQUIRED for Realtime Database
+  databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
+
+  messagingSenderId: "758133068153",
+  appId: "1:758133068153:web:5513a1de83491c81776084"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+// ---------------- Load All Users ----------------
+function loadUsers(){
+    const list = document.getElementById("userList");
+
+    firebase.database().ref("users").on("value", snap => {
+        list.innerHTML = ""; // clear old
+
+        snap.forEach(user => {
+            let d = user.val();
+
+            let name   = d?.name   || "No Name";
+            let email  = d?.email  || "No Email";
+            let phone  = d?.phone  || "No Phone";
+            let bal    = d?.balance !== undefined ? d.balance : 0;
+            let uid    = d?.uid || user.key;
+
+            let box = `
+                <div class="userBox">
+                    <div class="title">${name}</div>
+                    <div class="small">📧 Email: ${email}</div>
+                    <div class="small">📱 Phone: ${phone}</div>
+                    <div class="small">💰 Balance: ${bal}</div>
+                    <div class="small">🆔 UID: ${uid}</div>
+                </div>
+            `;
+
+            list.innerHTML += box;
+        });
+    });
+}
+
+loadUsers();
+</script>
+
+</body>
+</html>
