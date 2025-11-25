@@ -15,7 +15,7 @@ body{
     margin:0;background:#0d0d0d;color:white;font-family:Arial;
 }
 .container{
-    width:95%;max-width:800px;margin:20px auto;
+    width:95%;max-width:850px;margin:20px auto;
 }
 .userBox{
     background:#111;padding:15px;margin:10px 0;
@@ -24,6 +24,18 @@ body{
 h2{text-align:center;margin-bottom:20px;}
 .title{font-size:18px;font-weight:bold;color:#00eaff;}
 .small{color:#bbb;font-size:14px;margin-top:4px;}
+
+input{
+    width:70px;padding:5px;border-radius:5px;border:none;
+    margin-right:5px;margin-top:5px;
+}
+button{
+    padding:5px 10px;border:none;border-radius:5px;
+    background:#ff0055;color:white;cursor:pointer;
+}
+button:hover{
+    background:#ff3377;
+}
 </style>
 
 </head>
@@ -35,15 +47,12 @@ h2{text-align:center;margin-bottom:20px;}
 </div>
 
 <script>
-// --------------- Firebase Config (Add databaseURL) -----------------
+// --------------- Firebase Config -----------------
 const firebaseConfig = {
   apiKey: "AIzaSyBl0PIm4lvZea96Bte3KaKQJvurGE1P8Es",
   authDomain: "post-c7e41.firebaseapp.com",
   projectId: "post-c7e41",
-
-  // 🔥 This line is REQUIRED for Realtime Database
   databaseURL: "https://post-c7e41-default-rtdb.firebaseio.com",
-
   messagingSenderId: "758133068153",
   appId: "1:758133068153:web:5513a1de83491c81776084"
 };
@@ -55,7 +64,7 @@ function loadUsers(){
     const list = document.getElementById("userList");
 
     firebase.database().ref("users").on("value", snap => {
-        list.innerHTML = ""; // clear old
+        list.innerHTML = ""; 
 
         snap.forEach(user => {
             let d = user.val();
@@ -63,16 +72,37 @@ function loadUsers(){
             let name   = d?.name   || "No Name";
             let email  = d?.email  || "No Email";
             let phone  = d?.phone  || "No Phone";
-            let bal    = d?.balance !== undefined ? d.balance : 0;
-            let uid    = d?.uid || user.key;
+
+            // ✔ Earn + Deposit Added
+            let earned = d?.earned || 0;
+            let deposit = d?.deposit || 0;
+
+            let uid = d?.uid || user.key;
 
             let box = `
                 <div class="userBox">
                     <div class="title">${name}</div>
                     <div class="small">📧 Email: ${email}</div>
                     <div class="small">📱 Phone: ${phone}</div>
-                    <div class="small">💰 Balance: ${bal}</div>
+                    <div class="small">💰 Earned Balance: ${earned}</div>
+                    <div class="small">💳 Deposit Balance: ${deposit}</div>
                     <div class="small">🆔 UID: ${uid}</div>
+
+                    <br>
+
+                    <!-- Earned Balance Control -->
+                    <div>
+                        <input type="number" id="earnedVal_${uid}" placeholder="Amount">
+                        <button onclick="changeBalance('${uid}','earned','add')">➕ Add</button>
+                        <button onclick="changeBalance('${uid}','earned','minus')">➖ Minus</button>
+                    </div>
+
+                    <!-- Deposit Balance Control -->
+                    <div style="margin-top:10px;">
+                        <input type="number" id="depositVal_${uid}" placeholder="Amount">
+                        <button onclick="changeBalance('${uid}','deposit','add')">➕ Add</button>
+                        <button onclick="changeBalance('${uid}','deposit','minus')">➖ Minus</button>
+                    </div>
                 </div>
             `;
 
@@ -82,6 +112,31 @@ function loadUsers(){
 }
 
 loadUsers();
+
+// ---------------- Change Balance ----------------
+function changeBalance(uid, type, action) {
+
+    let inputId = type === "earned" ? `earnedVal_${uid}` : `depositVal_${uid}`;
+    let amount = parseFloat(document.getElementById(inputId).value);
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("Enter valid amount");
+        return;
+    }
+
+    let ref = firebase.database().ref(`users/${uid}/${type}`);
+
+    ref.once("value").then(snap => {
+        let current = snap.val() || 0;
+
+        let updated = action === "add" ? current + amount : current - amount;
+        if (updated < 0) updated = 0; // prevent negative balance
+
+        ref.set(updated);
+
+        alert(type.toUpperCase() + " updated!");
+    });
+}
 </script>
 
 </body>

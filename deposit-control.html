@@ -152,8 +152,8 @@ function saveNumbers(){
 db.collection("addMoney")
   .where("status", "==", "pending")
   .orderBy("time", "desc")
-  .onSnapshot(
-    snapshot => {
+  .onSnapshot(snapshot => {
+
       let html = "";
 
       snapshot.forEach(doc=>{
@@ -161,13 +161,14 @@ db.collection("addMoney")
 
         html += `
         <div class="req">
+          <p><b>User UID:</b> ${d.uid}</p>
           <p><b>Amount:</b> ${d.amount} Tk</p>
           <p><b>Method:</b> ${d.method}</p>
           <p><b>TxID:</b> ${d.txid}</p>
           <p><b>Number:</b> ${d.number}</p>
           <p class="small">${d.time ? d.time.toDate() : ""}</p>
 
-          <button class="approve" onclick="approve('${doc.id}', ${d.amount})">Approve</button>
+          <button class="approve" onclick="approve('${doc.id}', '${d.uid}', ${d.amount})">Approve</button>
           <button class="reject" onclick="rejectReq('${doc.id}')">Reject</button>
         </div>
         `;
@@ -178,24 +179,54 @@ db.collection("addMoney")
       }
 
       document.getElementById("requestList").innerHTML = html;
-    },
 
-    error => {
-      document.getElementById("requestList").innerHTML =
-        "<p style='color:red'>⚠ Composite index required in Firestore!</p>";
-      console.error("Index Error:", error);
-    }
-  );
+  });
 
 
-// ---------- APPROVE REQUEST ----------
-function approve(id, amount){
+// ---------- APPROVE REQUEST + BALANCE UPDATE ----------
+function approve(id, uid, amount){
+
+  if(!uid){
+    alert("Error: UID Missing!");
+    return;
+  }
+
+  // 1️⃣ addMoney → approved
   db.collection("addMoney").doc(id).update({
     status: "approved"
-  }).then(()=>{
-    alert("Approved!");
+  });
+
+  // 2️⃣ user balance update
+  const userRef = db.collection("users").doc(uid);
+
+  userRef.get().then(doc => {
+    let current = 0;
+
+    if(!doc.exists){
+      // If user document missing, create default
+      current = 0;
+      userRef.set({
+        balance: amount,
+        earn: 0
+      }, { merge: true });
+    } 
+    else {
+      current = doc.data().balance || 0;
+      userRef.update({
+        balance: current + amount
+      });
+    }
+
+    // 3️⃣ Mark as success
+    db.collection("addMoney").doc(id).update({
+      status: "success"
+    });
+
+    alert("Approved & Balance Added!");
+
   });
 }
+
 
 // ---------- REJECT REQUEST ----------
 function rejectReq(id){
