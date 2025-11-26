@@ -72,10 +72,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+
 // ---------------- Load All Withdraw Requests ----------------
 db.ref("withdrawRequests").on("value", snapshot => {
     let listBox = document.getElementById("withdrawList");
     listBox.innerHTML = "";
+
+    let allRequests = [];
 
     snapshot.forEach(userReq => {
         let uid = userReq.key;
@@ -83,28 +86,45 @@ db.ref("withdrawRequests").on("value", snapshot => {
         userReq.forEach(req => {
             let data = req.val();
 
-            listBox.innerHTML += `
-                <div class="box">
-                    <p><b>User:</b> ${uid}</p>
-                    <p><b>Amount:</b> ${data.amount} BDT</p>
-                    <p><b>Method:</b> ${data.method}</p>
-                    <p><b>Number:</b> ${data.number}</p>
-                    <p><b>Date:</b> <span class="small">${data.date}</span></p>
-                    <p>Status: 
-                        <span class="${data.status}">
-                            ${data.status.toUpperCase()}
-                        </span>
-                    </p>
-
-                    ${data.status === "pending" ? `
-                        <button class="btn approve" onclick="approve('${uid}','${req.key}', ${data.amount})">Approve</button>
-                        <button class="btn reject" onclick="reject('${uid}','${req.key}')">Reject</button>
-                    ` : ``}
-                </div>
-            `;
+            allRequests.push({
+                uid: uid,
+                reqId: req.key,
+                ...data
+            });
         });
     });
+
+    // ---------- SORTING ----------
+    // Pending → Approved → Rejected
+    allRequests.sort((a, b) => {
+        const order = { pending: 1, approved: 2, rejected: 3 };
+        return order[a.status] - order[b.status];
+    });
+
+    // ---------- DISPLAY ----------
+    allRequests.forEach(data => {
+        listBox.innerHTML += `
+            <div class="box">
+                <p><b>User:</b> ${data.uid}</p>
+                <p><b>Amount:</b> ${data.amount} BDT</p>
+                <p><b>Method:</b> ${data.method}</p>
+                <p><b>Number:</b> ${data.number}</p>
+                <p><b>Date:</b> <span class="small">${data.date}</span></p>
+                <p>Status:
+                    <span class="${data.status}">
+                        ${data.status.toUpperCase()}
+                    </span>
+                </p>
+
+                ${data.status === "pending" ? `
+                    <button class="btn approve" onclick="approve('${data.uid}','${data.reqId}', ${data.amount})">Approve</button>
+                    <button class="btn reject" onclick="reject('${data.uid}','${data.reqId}')">Reject</button>
+                ` : ``}
+            </div>
+        `;
+    });
 });
+
 
 // ---------------- Approve Withdraw ----------------
 function approve(uid, reqId, amount) {
@@ -127,15 +147,16 @@ function approve(uid, reqId, amount) {
     alert("Withdrawal Approved!");
 }
 
+
 // ---------------- Reject Withdraw ----------------
 function reject(uid, reqId) {
-
     db.ref("withdrawRequests/" + uid + "/" + reqId).update({
         status: "rejected"
     });
 
     alert("Withdrawal Rejected!");
 }
+
 </script>
 
 </body>
